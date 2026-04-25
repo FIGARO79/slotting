@@ -1,0 +1,20 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+slotting.db
+
+# Node
+node_modules/
+frontend/dist/
+.eslintcache
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (Opcional, pero usualmente se ignoran si son muy grandes)
+# datos/
+# static/json/*.json

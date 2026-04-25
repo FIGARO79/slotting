@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+aiosqlite
+polars
+numpy
+openpyxl
+orjson
+pydantic
+python-multipart
