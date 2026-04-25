@@ -13,4 +13,4 @@ PLANNER_CONFIG_PATH = STATIC_PATH / "planner_config.json"
 PLANNER_DATA_PATH = STATIC_PATH / "planner_data.json"
 
 # Base de datos (SQLite para portabilidad fácil)
-DATABASE_URL = "sqlite+aiosqlite:///./slotting.db"
+DATABASE_URL = "sqlite+aiosqlite:///./database/slotting.db"
