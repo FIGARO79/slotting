@@ -8,3 +8,5 @@ openpyxl
 orjson
 pydantic
 python-multipart
+fastexcel
+nodeenv
