@@ -50,12 +50,13 @@ class SlottingService:
         if rules_sql:
             turnover = {r.sic_code: {"range": r.description, "spot": r.ideal_spot} for r in rules_sql}
 
-        # 3. Fallback al JSON si SQL está vacío (Migración inicial)
-        if not storage and os.path.exists(self.params_path):
+        # 3. Fallback al JSON (Si falta algo o todo)
+        if (not storage or not turnover) and os.path.exists(self.params_path):
             try:
                 with open(self.params_path, 'rb') as f:
                     config = orjson.loads(f.read())
-                    storage = config.get("storage", {})
+                    if not storage:
+                        storage = config.get("storage", {})
                     if not turnover:
                         turnover = config.get("turnover", {})
             except: pass

@@ -1,3 +1,44 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --sap-font-family: 'Roboto', sans-serif;
+    --sap-bg: #ffffff;
+    --sap-text: #000000;
+}
+
+* {
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+body {
+    font-family: var(--sap-font-family);
+    color: var(--sap-text);
+    background-color: var(--sap-bg);
+    line-height: 1.5;
+    margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6, b, strong, th {
+    font-weight: 400 !important;
+}
+
+/* Mantener solo bordes y estructura */
+table {
+    border-collapse: collapse;
+}
+
+input, select, button {
+    border: 1px solid #000000 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 4px 8px !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}

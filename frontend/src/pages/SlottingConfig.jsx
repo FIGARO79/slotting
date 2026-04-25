@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Save,
-  Cpu,
-  Box,
-  AlertCircle,
-  TrendingUp,
-  Layers,
-  Thermometer,
-  Anchor,
-  Info
-} from 'lucide-react';
-import Card from '../components/Card';
+import { Save, RefreshCw } from 'lucide-react';
 
 const SlottingConfig = () => {
   const [config, setConfig] = useState({
@@ -20,227 +9,213 @@ const SlottingConfig = () => {
     prioritize_rotation: true,
   });
 
+  const [sicRules, setSicRules] = useState([
+    { code: 'W', range: '> 30', spot: 'Hot', class: 'Alta Rotacion' },
+    { code: 'X', range: '11 - 30', spot: 'Hot', class: 'Alta Rotacion' },
+    { code: 'Y', range: '7 - 10', spot: 'Warm', class: 'Media Rotacion' },
+    { code: 'K', range: '5 - 6', spot: 'Warm', class: 'Media Rotacion' },
+    { code: 'L', range: '3 - 4', spot: 'Cold', class: 'Baja Rotacion' },
+    { code: 'Z', range: '1 - 2', spot: 'Cold', class: 'Baja Rotacion' },
+    { code: '0', range: '0', spot: 'Cold', class: 'Baja Rotacion' },
+  ]);
+
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleSave = () => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    }, 1000);
+  const fetchConfig = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/admin/slotting-config');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.turnover && Object.keys(data.turnover).length > 0) {
+            const mappedRules = Object.entries(data.turnover).map(([code, info]) => ({
+                code,
+                range: info.range,
+                spot: info.spot.charAt(0).toUpperCase() + info.spot.slice(1).toLowerCase(),
+                class: info.spot.toLowerCase() === 'hot' ? 'Alta Rotacion' : (info.spot.toLowerCase() === 'warm' ? 'Media Rotacion' : 'Baja Rotacion')
+            }));
+            const order = ['W', 'X', 'Y', 'K', 'L', 'Z', '0'];
+            mappedRules.sort((a, b) => order.indexOf(a.code) - order.indexOf(b.code));
+            setSicRules(mappedRules);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const sicRules = [
-    { code: 'W', range: '> 30', spot: 'Hot', class: 'Alta Rotación' },
-    { code: 'X', range: '11 - 30', spot: 'Hot', class: 'Alta Rotación' },
-    { code: 'Y', range: '7 - 10', spot: 'Hot', class: 'Alta Rotación' },
-    { code: 'K', range: '5 - 6', spot: 'Cold', class: 'Baja Rotación' },
-    { code: 'L', range: '3 - 4', spot: 'Cold', class: 'Baja Rotación' },
-    { code: 'Z', range: '1 - 2', spot: 'Cold', class: 'Baja Rotación' },
-    { code: '0', range: '0', spot: 'Cold', class: 'Baja Rotación' },
-  ];
+  useEffect(() => { fetchConfig(); }, []);
+
+  const handleSpotChange = (code, newSpot) => {
+    setSicRules(prev => prev.map(rule => 
+      rule.code === code ? { 
+        ...rule, 
+        spot: newSpot, 
+        class: newSpot === 'Hot' ? 'Alta Rotacion' : (newSpot === 'Warm' ? 'Media Rotacion' : 'Baja Rotacion')
+      } : rule
+    ));
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const turnoverPayload = {};
+      sicRules.forEach(rule => {
+        turnoverPayload[rule.code] = { range: rule.range, spot: rule.spot.toLowerCase() };
+      });
+      const response = await fetch('/api/admin/slotting-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...config, turnover: turnoverPayload })
+      });
+      if (response.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
+    <div className="flex flex-col gap-10 pb-20">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex justify-between items-center border-b border-black pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Configuración de Slotting</h1>
-          <p className="text-gray-500 text-sm mt-1">Reglas de negocio y parámetros del optimizador espacial.</p>
+          <h1>Configuracion de Slotting</h1>
+          <p>Motor de optimizacion y reglas de negocio</p>
         </div>
-        <button 
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-sm disabled:opacity-70"
-        >
-          {isSaving ? (
-             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
-          <span>{isSaving ? 'Guardando...' : 'Guardar Cambios'}</span>
-        </button>
-      </div>
-
-      {saved && (
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 text-green-600" />
-          <p className="text-sm">Configuración y reglas actualizadas correctamente.</p>
-        </div>
-      )}
-
-      {/* Alerta de Prioridad ERP */}
-      <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex gap-3">
-        <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-        <div>
-          <h4 className="text-sm font-semibold text-amber-900">Prioridad Jerárquica Activa</h4>
-          <p className="text-xs text-amber-800 mt-1">
-            El sistema prioriza los valores de <strong>SIC Code</strong> provenientes del ERP. 
-            El cálculo local por "Hits" solo se activa si el valor oficial está vacío o es inválido.
-          </p>
+        <div className="flex items-center gap-2">
+            <button onClick={fetchConfig}><RefreshCw className="w-3.5 h-3.5" /></button>
+            <button onClick={handleSave} disabled={isSaving}>
+                <span>Guardar Cambios</span>
+            </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {saved && <div className="border border-black p-2 text-center uppercase">Configuracion actualizada correctamente</div>}
+
+      <div className="flex flex-col gap-10">
         
-        {/* Card 1: Clasificación SIC */}
-        <div className="lg:col-span-2">
-          <Card title="Clasificación por Rotación (SIC Code)" icon={TrendingUp} description="Umbrales de hits para determinar la temperatura del ítem.">
-            <div className="overflow-hidden border border-gray-100 rounded-lg">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 text-gray-600 font-medium">
-                  <tr>
-                    <th className="px-4 py-3">Código</th>
-                    <th className="px-4 py-3">Hits (90d)</th>
-                    <th className="px-4 py-3">Zona Ideal</th>
-                    <th className="px-4 py-3">Clasificación</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {sicRules.map((rule) => (
-                    <tr key={rule.code} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 font-bold text-indigo-600">{rule.code}</td>
-                      <td className="px-4 py-3 text-gray-600">{rule.range}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          rule.spot === 'Hot' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {rule.spot}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-gray-500">{rule.class}</td>
+        {/* 01. Jerarquia de Rotacion */}
+        <div>
+            <h2>01. Jerarquia de Rotacion (SIC)</h2>
+            <table className="w-full text-left mt-2">
+                <thead>
+                    <tr className="border-b border-black">
+                        <th className="py-2">Codigo</th>
+                        <th className="py-2">Rango Hits</th>
+                        <th className="py-2">Spot Ideal</th>
+                        <th className="py-2">Categoria</th>
                     </tr>
-                  ))}
+                </thead>
+                <tbody>
+                    {sicRules.map((rule) => (
+                        <tr key={rule.code} className="border-b border-gray-200">
+                            <td className="py-2">{rule.code}</td>
+                            <td className="py-2">{rule.range}</td>
+                            <td className="py-2">
+                                <select value={rule.spot} onChange={(e) => handleSpotChange(rule.code, e.target.value)}>
+                                    <option value="Hot">Hot</option>
+                                    <option value="Warm">Warm</option>
+                                    <option value="Cold">Cold</option>
+                                </select>
+                            </td>
+                            <td className="py-2 opacity-50 italic">{rule.class}</td>
+                        </tr>
+                    ))}
                 </tbody>
-              </table>
-            </div>
-          </Card>
+            </table>
         </div>
 
-        {/* Card 2: Zonificación por Atributos */}
-        <Card title="Zonificación Física" icon={Anchor} description="Reglas automáticas por descripción y peso.">
-          <div className="space-y-4">
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Zonas Especiales</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-700">Cantilever</span>
-                  <span className="text-xs bg-gray-200 px-2 py-0.5 rounded text-gray-600">"ROD" | "STEEL"</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-700">Minutería</span>
-                  <span className="text-xs bg-gray-200 px-2 py-0.5 rounded text-gray-600">&lt; 0.1 kg</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Niveles en Rack</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-700 font-medium">Pesados (&gt;10kg)</span>
-                  <span className="text-indigo-600 font-bold">Niv. 3, 4, 5</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-700 font-medium">Alta Rotación (W, X)</span>
-                  <span className="text-indigo-600 font-bold">Niv. 0, 1</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-700 font-medium">Resto de ítems</span>
-                  <span className="text-indigo-600 font-bold">Nivel 2</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Card 3: Capacidad y Mezcla */}
-        <Card title="Mezcla y Capacidad" icon={Layers} description="Límites de SKUs diferentes por ubicación.">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-700">Máximo SKUs Minutería</p>
-                <p className="text-xs text-gray-500">Ubicaciones de piezas pequeñas.</p>
-              </div>
-              <span className="text-lg font-bold text-indigo-600">3</span>
-            </div>
-            <hr className="border-gray-100" />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-700">Máximo SKUs Nivel 2</p>
-                <p className="text-xs text-gray-500">Zona de alta densidad.</p>
-              </div>
-              <span className="text-lg font-bold text-indigo-600">6</span>
-            </div>
-            <hr className="border-gray-100" />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-700">Otros Niveles Rack</p>
-                <p className="text-xs text-gray-500">Capacidad estándar.</p>
-              </div>
-              <span className="text-lg font-bold text-indigo-600">4</span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Card 4: Motor de Optimización IA */}
-        <Card title="Motor de Optimización IA" icon={Cpu} description="Configuración del algoritmo de aprendizaje.">
-          <div className="space-y-5">
+        {/* 02. Restricciones Fisicas y Zonificacion */}
+        <div className="grid grid-cols-2 gap-10">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nivel de Optimización
-              </label>
-              <select 
-                value={config.ai_optimization_level}
-                onChange={(e) => setConfig({...config, ai_optimization_level: e.target.value})}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-gray-700 bg-white"
-              >
-                <option value="rapida">Rápida (Heurística básica)</option>
-                <option value="equilibrada">Equilibrada</option>
-                <option value="alta">Alta (Aprendizaje Profundo)</option>
-              </select>
+                <h2>02. Zonificacion y Niveles</h2>
+                <div className="mt-2 flex flex-col gap-2">
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Cantilever (ROD/STEEL)</span>
+                        <span>Zona Especial</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Minuteria (&lt;0.1kg)</span>
+                        <span>Zona Especial</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Items Pesados (&gt;10kg)</span>
+                        <span>Niveles 3, 4, 5</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Alta Rotacion (W, X)</span>
+                        <span>Niveles 0, 1</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Resto de Articulos</span>
+                        <span>Nivel 2</span>
+                    </div>
+                </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-indigo-50 rounded-lg border border-indigo-100">
-              <div>
-                <h4 className="text-sm font-medium text-indigo-900">Conciencia Espacial</h4>
-                <p className="text-[10px] text-indigo-700 mt-0.5 uppercase font-bold tracking-tighter">Filtro de Seguridad Activo</p>
-              </div>
-              <div className="flex items-center gap-1 text-indigo-600">
-                <Thermometer className="w-4 h-4" />
-                <span className="text-xs font-bold underline decoration-dotted">Hot/Cold</span>
-              </div>
+            <div>
+                <h2>03. Limites de Mezcla (SKUs)</h2>
+                <div className="mt-2 flex flex-col gap-2">
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Ubicaciones Minuteria</span>
+                        <span>Maximo 3 SKUs</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Ubicaciones Nivel 2</span>
+                        <span>Maximo 6 SKUs</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Otros Niveles Rack</span>
+                        <span>Maximo 4 SKUs</span>
+                    </div>
+                </div>
             </div>
-            
-            <div className="text-[10px] text-gray-400 bg-gray-50 p-2 rounded italic">
-              * La IA requiere al menos 2 registros manuales para aprender un bin específico y 5 para patrones de zona.
-            </div>
-          </div>
-        </Card>
+        </div>
 
-        {/* Card 5: Excepciones Críticas */}
-        <Card title="Excepciones Críticas" icon={Box} description="Reglas que anulan cualquier optimización.">
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-100">
-              <div className="w-2 h-2 rounded-full bg-red-500 mt-1.5 shrink-0" />
-              <div>
-                <h4 className="text-sm font-bold text-red-900 leading-tight">Cross-Docking (XDOCK)</h4>
-                <p className="text-xs text-red-700 mt-1">Si existen reservas pendientes en el ERP, se fuerza la ubicación XDOCK ignorando IA y Slotting.</p>
-              </div>
+        {/* 04. IA y Excepciones */}
+        <div className="grid grid-cols-2 gap-10">
+            <div>
+                <h2>04. Motor de IA</h2>
+                <div className="mt-2">
+                    <label className="block mb-1">Nivel de Optimizacion</label>
+                    <select 
+                        value={config.ai_optimization_level}
+                        onChange={(e) => setConfig({...config, ai_optimization_level: e.target.value})}
+                        className="w-full"
+                    >
+                        <option value="rapida">Heuristica Basica</option>
+                        <option value="equilibrada">Equilibrada</option>
+                        <option value="alta">Deep Learning</option>
+                    </select>
+                    <p className="mt-4 text-xs italic opacity-60">
+                        El sistema valida la temperatura (H/W/C) del bin antes de aplicar sugerencias aprendidas.
+                    </p>
+                </div>
             </div>
-            
-            <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-              <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-              <div>
-                <h4 className="text-sm font-bold text-blue-900 leading-tight">Reubicación Proactiva</h4>
-                <p className="text-xs text-blue-700 mt-1">Si la rotación de un ítem cambia en el ERP, el sistema sugerirá moverlo aunque ya tenga ubicación física.</p>
-              </div>
+
+            <div>
+                <h2>05. Excepciones de Prioridad</h2>
+                <div className="mt-2 flex flex-col gap-2">
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Cross-Docking (XDOCK)</span>
+                        <span>Si existen reservas</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                        <span>Reubicacion Proactiva</span>
+                        <span>Si cambia la rotacion</span>
+                    </div>
+                </div>
             </div>
-          </div>
-        </Card>
+        </div>
 
       </div>
     </div>

@@ -5,7 +5,20 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['"72"', '"72full"', 'Inter', 'Roboto', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
+        print: ['Arial', 'Helvetica', 'sans-serif'],
+      },
+      colors: {
+        'sap-primary': '#354a5f',
+        'sap-shell': '#354a5f',
+        'sap-bg': '#f5f7fa',
+        'sap-text': '#1a1c1e',
+        'sap-header': '#001d35',
+      }
+    },
   },
   plugins: [],
 }

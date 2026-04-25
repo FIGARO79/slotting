@@ -1,64 +1,78 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { Bell, LayoutDashboard } from 'lucide-react';
+import { Bell, LayoutDashboard, Search, HelpCircle, User } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import InventoryList from './pages/InventoryList';
 import SlottingConfig from './pages/SlottingConfig';
 
 const DashboardPlaceholder = () => (
-  <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in">
-    <LayoutDashboard className="w-16 h-16 text-gray-300 mb-4" />
-    <h2 className="text-xl font-bold text-gray-700 mb-2">Dashboard en Construcción</h2>
-    <p className="text-gray-500 max-w-md">Aquí se mostrarán métricas clave de la ocupación del almacén, eficiencia del slotting actual y alertas de inventario.</p>
+  <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-white p-10 rounded-[2rem] shadow-xl border border-gray-100 flex flex-col items-center">
+        <div className="bg-blue-50 p-6 rounded-3xl mb-6">
+            <LayoutDashboard className="w-16 h-16 text-blue-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-sap-header mb-2">Panel de Métricas en Desarrollo</h2>
+        <p className="text-gray-500 max-w-sm text-sm font-medium leading-relaxed">
+            Próximamente: Visualización en tiempo real de la ocupación por zonas, efectividad de la IA y alertas de reubicación proactiva.
+        </p>
+    </div>
   </div>
 );
 
 function App() {
   const location = useLocation();
   
-  // Mapeo de rutas a etiquetas para el Header
   const getPageLabel = () => {
     switch(location.pathname) {
-      case '/': return 'Inventario';
-      case '/config': return 'Config. Slotting';
-      case '/dashboard': return 'Dashboard';
-      default: return 'SlottingPro';
+      case '/': return 'Maestro de Inventario';
+      case '/config': return 'Reglas y Restricciones';
+      case '/dashboard': return 'Métricas de Almacén';
+      default: return 'Logix AI';
     }
   };
 
   return (
-    <div className="flex h-screen bg-[#F3F4F6] font-sans selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="flex h-screen bg-sap-bg font-sans">
       <Sidebar />
 
-      {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        
-        {/* Top Navbar */}
-        <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 shrink-0 z-0 shadow-sm">
-          <div className="flex items-center gap-4">
-             {/* Mobile Menu Toggle */}
-             <button className="md:hidden text-gray-500 hover:text-gray-700">
-               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-             </button>
-             <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-               {getPageLabel()}
-             </h2>
+        <header className="bg-sap-shell h-14 flex items-center justify-between px-6 shrink-0 z-20 shadow-lg relative">
+          <div className="flex items-center gap-6">
+             <div className="flex items-center gap-3">
+                <span className="text-white/40 font-light text-xl">|</span>
+                <h2 className="text-sm font-bold text-white tracking-wide uppercase">
+                  {getPageLabel()}
+                </h2>
+             </div>
+
+             <div className="hidden lg:flex items-center bg-white/10 rounded-lg px-3 py-1.5 w-80 border border-white/10 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-400 transition-all group">
+                <Search className="w-4 h-4 text-white/40 group-focus-within:text-gray-400" />
+                <input 
+                    type="text" 
+                    placeholder="Buscar en el sistema..." 
+                    className="bg-transparent border-none text-xs text-white focus:text-gray-800 focus:ring-0 w-full placeholder:text-white/30 outline-none px-2"
+                />
+             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <button className="relative p-2 text-gray-400 hover:bg-gray-50 rounded-full transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+          <div className="flex items-center gap-1">
+            <button className="p-2.5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Ayuda">
+              <HelpCircle className="w-5 h-5" />
             </button>
-            <div className="h-6 w-px bg-gray-200 hidden sm:block"></div>
-            <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium hidden sm:flex">
-               <span>Cerrar Sesión</span>
+            <button className="relative p-2.5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Notificaciones">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-sap-shell"></span>
+            </button>
+            <div className="w-px h-6 bg-white/10 mx-2"></div>
+            <button className="flex items-center gap-2 px-2 py-1 hover:bg-white/10 rounded-lg transition-all group">
+               <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-105 transition-transform">
+                  <User className="w-4 h-4 text-white" />
+               </div>
             </button>
           </div>
         </header>
 
-        {/* Dynamic Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-6xl mx-auto">
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 no-scrollbar bg-sap-bg">
+          <div className="max-w-7xl mx-auto page-transition">
             <Routes>
               <Route path="/" element={<InventoryList />} />
               <Route path="/config" element={<SlottingConfig />} />
@@ -66,7 +80,6 @@ function App() {
             </Routes>
           </div>
         </div>
-
       </main>
     </div>
   )
