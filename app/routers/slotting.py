@@ -17,7 +17,7 @@ admin_router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 @admin_router.get("/master-items")
 async def get_master_items(search: str = "", limit: int = 100, db: AsyncSession = Depends(get_db)):
-    stmt = select(MasterItem)
+    stmt = select(MasterItem).where(MasterItem.physical_qty > 0)
     if search:
         stmt = stmt.where(MasterItem.item_code.contains(search) | MasterItem.description.contains(search))
     res = await db.execute(stmt.limit(limit))

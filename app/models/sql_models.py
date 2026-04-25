@@ -11,6 +11,7 @@ class MasterItem(Base):
     bin_1 = Column(String(100))
     additional_bin = Column(String(255))
     physical_qty = Column(Float, default=0.0)
+    frozen_qty = Column(Float, default=0.0)
     weight_per_unit = Column(Float, default=0.0)
     xdock_pending = Column(Integer, default=0)
 

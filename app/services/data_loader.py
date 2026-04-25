@@ -16,7 +16,7 @@ async def load_master_data(csv_path: str):
     df = pl.read_csv(csv_path, infer_schema_length=10000, ignore_errors=True)
     
     # Renombrar columnas para que coincidan con el modelo
-    # Basado en el head: Item_Code, Item_Description, ABC_Code_stockroom, SIC_Code_stockroom, Bin_1, Aditional_Bin_Location, Physical_Qty, Weight_per_Unit
+    # Basado en el head: Item_Code, Item_Description, ABC_Code_stockroom, SIC_Code_stockroom, Bin_1, Aditional_Bin_Location, Physical_Qty, Weight_per_Unit, Frozen_Qty
     df_clean = df.select([
         pl.col("Item_Code").cast(pl.Utf8),
         pl.col("Item_Description").alias("description").cast(pl.Utf8),
@@ -25,6 +25,7 @@ async def load_master_data(csv_path: str):
         pl.col("Bin_1").cast(pl.Utf8),
         pl.col("Aditional_Bin_Location").alias("additional_bin").cast(pl.Utf8),
         pl.col("Physical_Qty").alias("physical_qty").cast(pl.Float64),
+        pl.col("Frozen_Qty").alias("frozen_qty").cast(pl.Float64),
         pl.col("Weight_per_Unit").alias("weight_per_unit").cast(pl.Float64),
         pl.col("Reserved_Qty").alias("xdock_pending").cast(pl.Int64)
     ]).unique(subset=["Item_Code"])
@@ -45,6 +46,7 @@ async def load_master_data(csv_path: str):
                     bin_1=row["Bin_1"],
                     additional_bin=row["additional_bin"],
                     physical_qty=row["physical_qty"] or 0.0,
+                    frozen_qty=row["frozen_qty"] or 0.0,
                     weight_per_unit=row["weight_per_unit"] or 0.0,
                     xdock_pending=row["xdock_pending"] or 0
                 ))
