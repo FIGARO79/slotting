@@ -2,7 +2,7 @@
 SETLOCAL EnableDelayedExpansion
 
 echo ======================================================
-echo    Iniciador de Sistema de Slotting
+echo    Iniciador de Sistema de Slotting (Full Stack)
 echo ======================================================
 
 :: Definir ruta del entorno virtual
@@ -22,9 +22,13 @@ call "%VENV_DIR%\Scripts\activate"
 echo [PROCESO] Verificando dependencias...
 pip install -r requirements.txt --quiet
 
-:: 4. Iniciar la aplicacion
-echo [OK] Iniciando servidor en http://localhost:8000
-echo Cierre esta ventana para detener el sistema.
+:: 4. Iniciar Frontend en ventana separada
+echo [PROCESO] Iniciando Frontend (React/Vite)...
+start "Slotting FRONTEND" cmd /k "call venv\Scripts\activate && cd frontend && npm run dev"
+
+:: 5. Iniciar Backend en esta ventana
+echo [OK] Iniciando Backend en http://localhost:8000
+echo Cierre esta ventana para detener el backend.
 python run.py
 
 pause

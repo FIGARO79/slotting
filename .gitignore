@@ -18,3 +18,5 @@ Thumbs.db
 # Data (Opcional, pero usualmente se ignoran si son muy grandes)
 # datos/
 # static/json/*.json
+
+dev_backend.bat
