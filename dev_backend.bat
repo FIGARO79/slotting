@@ -1,25 +1,39 @@
 @echo off
+SETLOCAL EnableDelayedExpansion
+
 echo ======================================================
-echo    MODO DESARROLLO: Backend Slotting
+echo    MODO DESARROLLO: Backend Slotting (UV Optimized)
 echo ======================================================
 
-:: Verificar que el entorno virtual existe
-if not exist "venv\Scripts\activate" (
-    echo [ERROR] No se encontro el entorno virtual en \venv
-    echo Por favor, ejecuta 'python -m venv venv' primero.
-    pause
-    exit /b
+:: 1. Deteccion de UV
+set "USE_UV=no"
+where uv >nul 2>nul
+if %ERRORLEVEL% EQU 0 set "USE_UV=yes"
+
+:: 2. Verificar existencia del entorno virtual (.venv o venv)
+set "VENV_PATH=.venv"
+if not exist ".venv\Scripts\activate" (
+    if exist "venv\Scripts\activate" (
+        set "VENV_PATH=venv"
+    ) else (
+        echo [ERROR] No se encontro el entorno virtual ^(.venv o venv^).
+        echo Por favor, ejecute 'instalar_y_preparar.bat' primero.
+        pause
+        exit /b
+    )
 )
 
-:: Activar entorno e iniciar
-echo [PROCESO] Activando venv...
-call venv\Scripts\activate
-
+:: 3. Activar e Iniciar
+echo [PROCESO] Iniciando backend (UV: %USE_UV%, Venv: %VENV_PATH%)...
 echo [OK] Servidor en: http://localhost:8000
-echo [INFO] Hot-Reload activado. La API y el Frontend se recargaran al guardar cambios.
-echo [INFO] Presiona Ctrl+C para detener.
+echo [INFO] Hot-Reload activado.
 echo ------------------------------------------------------
 
-python run.py
+if "%USE_UV%"=="yes" (
+    uv run run.py
+) else (
+    call %VENV_PATH%\Scripts\activate
+    python run.py
+)
 
 pause
