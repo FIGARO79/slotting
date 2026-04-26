@@ -17,13 +17,13 @@ echo [OK] Python detectado.
 
 :: 2. Crear y configurar Entorno Virtual de Python
 echo [2/4] Configurando entorno virtual de Python...
-if not exist "venv_portable" (
-    python -m venv venv_portable
+if not exist "venv" (
+    python -m venv venv
     echo [OK] Entorno virtual creado.
 )
 
 echo [PROCESO] Instalando dependencias de Python y Nodeenv...
-call venv_portable\Scripts\activate
+call venv\Scripts\activate
 pip install --upgrade pip --quiet
 pip install -r requirements.txt --quiet
 echo [OK] Dependencias de Python listas.

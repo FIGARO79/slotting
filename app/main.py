@@ -22,7 +22,6 @@ app.add_middleware(
 # Incluir Routers (Ya tienen el prefijo /api definido en sus respectivos archivos)
 app.include_router(planner.router)
 app.include_router(slotting.router)
-app.include_router(slotting.admin_router)
 
 @app.on_event("startup")
 async def startup():

@@ -3,16 +3,11 @@
 @tailwind utilities;
 
 :root {
-    --sap-font-family: 'Roboto', sans-serif;
-    --sap-bg: #ffffff;
-    --sap-text: #000000;
-}
-
-* {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    letter-spacing: 0 !important;
-    text-transform: none !important;
+    --sap-font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    --sap-bg: #f8fafc;
+    --sap-shell: #1e293b;
+    --sap-header: #0f172a;
+    --sap-text: #334155;
 }
 
 body {
@@ -21,24 +16,35 @@ body {
     background-color: var(--sap-bg);
     line-height: 1.5;
     margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6, b, strong, th {
-    font-weight: 400 !important;
-}
-
-/* Mantener solo bordes y estructura */
-table {
-    border-collapse: collapse;
-}
-
-input, select, button {
-    border: 1px solid #000000 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    padding: 4px 8px !important;
-}
-
+/* Custom Scrollbar for a cleaner look */
 .no-scrollbar::-webkit-scrollbar {
     display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Base table styles to ensure they look good everywhere */
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+th {
+    font-weight: 600;
+    color: var(--sap-header);
+}
+
+/* Base input styles for cleaner forms */
+input[type="text"], input[type="number"], select {
+    @apply border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all;
+}
+
+button {
+    @apply transition-all duration-200;
 }

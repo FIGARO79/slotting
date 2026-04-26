@@ -126,6 +126,43 @@ class AISlottingService:
             db.add(AICategoryPattern(sic_code=sic_code, bin_code=final_bin, frequency=1, last_updated=now))
 
         await db.commit()
+        # Sincronizar con JSON para visibilidad del usuario
+        await self.save_memory_to_json(db)
+
+    async def save_memory_to_json(self, db: AsyncSession):
+        """Exporta la memoria actual de la DB al archivo JSON legacy para inspección manual."""
+        try:
+            # 1. Obtener todos los patrones de ítems
+            res_items = await db.execute(select(AIItemPattern))
+            items_data = {}
+            for p in res_items.scalars().all():
+                if p.item_code not in items_data: items_data[p.item_code] = {}
+                items_data[p.item_code][p.bin_code] = p.frequency
+
+            # 2. Obtener todos los patrones de categorías
+            res_cats = await db.execute(select(AICategoryPattern))
+            cats_data = {}
+            for p in res_cats.scalars().all():
+                if p.sic_code not in cats_data: cats_data[p.sic_code] = {}
+                cats_data[p.sic_code][p.bin_code] = p.frequency
+
+            payload = {
+                "item_patterns": items_data,
+                "category_patterns": cats_data,
+                "stats": {
+                    "total_items": len(items_data),
+                    "total_categories": len(cats_data),
+                    "last_sync": datetime.datetime.now().isoformat()
+                }
+            }
+
+            from app.core.config import AI_SLOTTING_MEMORY_PATH
+            with open(AI_SLOTTING_MEMORY_PATH, 'wb') as f:
+                f.write(orjson.dumps(payload, option=orjson.OPT_INDENT_2))
+            
+            print(f"💾 Memoria de IA sincronizada con {AI_SLOTTING_MEMORY_PATH}")
+        except Exception as e:
+            print(f"⚠️ Error guardando memoria JSON: {e}")
 
     async def predict_best_bin(self, db: AsyncSession, item_code: str, sic_code: str, fallback_bin: Optional[str] = None) -> Optional[str]:
         """

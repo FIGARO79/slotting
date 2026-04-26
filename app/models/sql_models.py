@@ -30,6 +30,7 @@ class BinLocation(Base):
     level = Column(Integer)
     aisle = Column(String(50))
     spot = Column(String(50))
+    score = Column(Integer, default=0)
 
 class SlottingRule(Base):
     __tablename__ = "slotting_rules"

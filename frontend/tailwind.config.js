@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"72"', '"72full"', 'Inter', 'Roboto', 'sans-serif'],
+        sans: ['Roboto', '"Segoe UI"', 'Inter', 'sans-serif'],
         inter: ['Inter', 'sans-serif'],
         print: ['Arial', 'Helvetica', 'sans-serif'],
       },

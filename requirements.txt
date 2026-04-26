@@ -5,6 +5,7 @@ aiosqlite
 polars
 numpy
 openpyxl
+xlsxwriter
 orjson
 pydantic
 python-multipart
