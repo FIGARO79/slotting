@@ -7,8 +7,33 @@ from app.core.db import engine, Base
 from app.services.data_loader import run_initial_load
 import asyncio
 import os
+import time
+import sys
 
 app = FastAPI(title="Slotting & Planning System")
+
+# --- SISTEMA HEARTBEAT (Auto-Apagado) ---
+LAST_HEARTBEAT = time.time()
+
+@app.get("/api/heartbeat")
+async def heartbeat():
+    global LAST_HEARTBEAT
+    LAST_HEARTBEAT = time.time()
+    return {"status": "alive"}
+
+async def check_heartbeat():
+    """Tarea que apaga el servidor si no hay actividad en el navegador."""
+    global LAST_HEARTBEAT
+    while True:
+        await asyncio.sleep(10)
+        if time.time() - LAST_HEARTBEAT > 20:
+            print("🛑 No se detecta actividad en el navegador. Cerrando servidores...")
+            # Cerrar procesos de Node (Vite) si están en el mismo grupo
+            if os.name == 'nt':
+                os.system('taskkill /F /IM node.exe /T >nul 2>&1')
+            
+            # Matar el proceso actual de Python
+            os._exit(0)
 
 # Configuración de CORS
 app.add_middleware(
@@ -28,6 +53,7 @@ async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     asyncio.create_task(run_initial_load())
+    asyncio.create_task(check_heartbeat())
 
 # Definir la ruta del frontend
 frontend_path = os.path.join(os.getcwd(), "frontend", "dist")

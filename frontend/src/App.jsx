@@ -1,4 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import InventoryList from './pages/InventoryList';
 import SlottingConfig from './pages/SlottingConfig';
@@ -8,6 +9,19 @@ import SlottingAnalysis from './pages/SlottingAnalysis';
 function App() {
   const location = useLocation();
   
+  // --- SISTEMA HEARTBEAT (Mantener servidor vivo) ---
+  useEffect(() => {
+    const pingHeartbeat = () => {
+      fetch('/api/heartbeat').catch(() => {}); // Ignorar errores de red
+    };
+
+    // Latido cada 5 segundos
+    const interval = setInterval(pingHeartbeat, 5000);
+    pingHeartbeat(); // Primer latido inmediato
+
+    return () => clearInterval(interval);
+  }, []);
+
   const getPageLabel = () => {
     switch(location.pathname) {
       case '/': return 'MAESTRO DE INVENTARIO';

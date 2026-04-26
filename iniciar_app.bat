@@ -15,20 +15,23 @@ if not exist "%VENV_DIR%\Scripts\activate" (
 )
 
 :: 2. Activar entorno virtual
-echo [PROCESO] Activando entorno...
+echo [PROCESO] Actuando entorno...
 call "%VENV_DIR%\Scripts\activate"
 
 :: 3. Verificando dependencias críticas
 echo [PROCESO] Verificando dependencias...
 pip install -r requirements.txt --quiet
 
-:: 4. Iniciar Frontend en ventana separada
-echo [PROCESO] Iniciando Frontend (React/Vite)...
-start "Slotting FRONTEND" cmd /k "call venv\Scripts\activate && cd frontend && npm run dev"
+:: 4. Iniciar Frontend en ventana minimizada
+echo [PROCESO] Lanzando entorno discreto...
+start /min "Slotting FRONTEND" cmd /c "call venv\Scripts\activate && cd frontend && npm run dev"
 
-:: 5. Iniciar Backend en esta ventana
-echo [OK] Iniciando Backend en http://localhost:8000
-echo Cierre esta ventana para detener el backend.
-python run.py
+:: 5. Iniciar Backend en ventana minimizada
+start /min "Slotting BACKEND" cmd /c "call venv\Scripts\activate && python run.py"
 
-pause
+echo [OK] El sistema se esta iniciando en segundo plano.
+echo El navegador se abrira automaticamente en unos segundos.
+echo Al cerrar la pestaña de la aplicacion, los servidores se apagaran solos.
+timeout /t 5 >nul
+
+exit
